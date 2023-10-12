@@ -1,0 +1,77 @@
+# ns-3 CI/CD script with the code-linting stage
+#
+# Contains jobs to check the ns-3 coding style and perform lint checking.
+
+# TODO: clang-tidy step, too difficult at the moment
+
+on: workflow_call
+
+jobs:
+  # Clang-format
+  check-style-clang-format:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:rolling
+    strategy:
+      matrix:
+        version: [16]
+    timeout-minutes: 60
+    steps:
+      - name: "Install required packages"
+        run: >
+          apt update &&
+          DEBIAN_FRONTEND=noninteractive apt install -y 
+          python3
+          wget
+          clang-format-${{ matrix.version }}
+      # The following 2 steps are required...
+      # Github workflows/actions are too limited >:(
+      # They will be duplicated in all reusable workflows
+      - name: "Retrieve action from repository"
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions/checkout-ns3
+          sparse-checkout-cone-mode: false
+      - name: "Checkout this repository as ns-3 module"
+        uses: ./.github/actions/checkout-ns3
+      - name: "Check code style"
+        run: python3 utils/check-style-clang-format.py --verbose .
+
+  # Emacs line
+  emacs-line:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: >
+          if ( egrep -rn --include="*.h" --include="*.cc" --include="*.c" --include="*.py" --include="*.rst" "c-file-style:|py-indent-offset:" ) ; then
+          echo "Found Emacs lines on the above C/C++, Python and RST files" ;
+          exit 1 ;
+          else
+          echo "No Emacs lines found on C/C++, Python and RST files" ;
+          exit 0 ;
+          fi
+
+  # Spell checking
+  spell-check:
+    runs-on: ubuntu-latest
+    container:
+      image: python:latest
+    timeout-minutes: 60
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install codespell
+      # Get commit messages
+      - run: >
+          if (git remote | grep -qw upstream) ; then
+          git remote remove upstream ;
+          fi
+      - run: git config --global --add safe.directory $GITHUB_WORKSPACE
+      # develop here is meant to be the "default branch"
+      - run: git remote add -t develop --no-tags -f upstream https://github.com/signetlabdei/lorawan.git
+      - run: git log --pretty=%B HEAD...upstream/develop ^upstream/develop > git_messages.txt
+      # Check source code and commit messages
+      - run: codespell -f -C0 ./

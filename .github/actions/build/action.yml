@@ -1,0 +1,43 @@
+name: "build"
+description: "Defines the central steps in building ns-3"
+
+runs:
+  using: "composite"
+  steps:
+    # Pre-configuration steps
+    - name: "Restore build cache of this job"
+      uses: actions/cache@v3
+      with:
+        path: ns-3-ccache-storage
+        key: ccache-${{ env.BUILD_ID }}
+    # Configuration steps
+    - name: "Prepare ccache environment"
+      run: |
+        mkdir -p ns-3-ccache-storage
+        echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+        echo "CCACHE_DIR=$GITHUB_WORKSPACE/ns-3-ccache-storage" >> $GITHUB_ENV
+        echo "MPI_CI=1" >> $GITHUB_ENV
+      shell: bash
+    - name: "Configure ns-3 CMake"
+      run: CXX=$COMPILER ./ns3 configure -d $MODE -GNinja --enable-examples --enable-tests --enable-asserts --enable-werror --enable-modules "lorawan;applications" $EXTRA_OPTIONS
+      shell: bash
+    # Build steps
+    - name: "Build ns-3"
+      run: >
+        ccache -z &&
+        ./ns3 build &&
+        if [[ "`./utils/ccache-miss-rate.py`" != "0" ]];
+        then `touch build/tests-$GITHUB_REF_NAME.txt`; 
+        fi &&
+        ccache -s
+      shell: bash
+    # Post-build steps
+    - name: Tar files to preserve permissions
+      run: tar -cf build.tzst --exclude build.tzst -P -C $GITHUB_WORKSPACE --use-compress-program zstdmt build/ .lock-*
+      shell: bash
+    - name: "Upload build artifacts"
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.BUILD_ID }}
+        path: build.tzst
+        retention-days: 2

@@ -1,0 +1,92 @@
+# Base ns-3 CI job template for per-commit jobs involving building and testing
+
+on:
+  workflow_call:
+    inputs:
+      stage:
+        description: "build|test"
+        required: true
+        type: string
+      compiler:
+        description: "g++|clang++"
+        required: true
+        type: string
+      mode:
+        description: "debug|default|release|optimized"
+        required: true
+        type: string
+      extra_options:
+        description: "additional './ns3 configure' options"
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+    timeout-minutes: 720
+    steps:
+      - name: "Install required packages"
+        run: >
+          pacman-key --init &&
+          pacman -Syu --noconfirm
+          base-devel gcc clang cmake ninja ccache
+          boost gsl gtk3 openmpi
+          openssh
+          python
+          wget
+      # The following 2 steps are required...
+      # Github workflows/actions are too limited >:(
+      # They will be duplicated in all reusable workflows
+      - name: "Retrieve action from repository"
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions/checkout-ns3
+          sparse-checkout-cone-mode: false
+      - name: "Checkout this repository as ns-3 module"
+        uses: ./.github/actions/checkout-ns3
+      - name: "Build ns-3"
+        uses: ./src/lorawan/.github/actions/build
+        env:
+          BUILD_ID: ${{ format('per-commit-{0}-{1}', inputs.compiler, inputs.mode) }}
+          COMPILER: ${{ inputs.compiler }}
+          MODE: ${{ inputs.mode }}
+          EXTRA_OPTIONS: ${{ inputs.extra_options }}
+
+  test:
+    if: inputs.stage == 'test'
+    runs-on: ubuntu-latest
+    needs: build
+    container:
+      image: archlinux
+    timeout-minutes: 720
+    steps:
+      - name: "Install required packages"
+        run: >
+          pacman-key --init &&
+          pacman -Syu --noconfirm
+          base-devel gcc clang cmake ninja ccache
+          boost gsl gtk3 openmpi
+          openssh
+          python
+          wget
+      # The following 2 steps are required...
+      # Github workflows/actions are too limited >:(
+      # They will be duplicated in all reusable workflows
+      - name: "Retrieve action from repository"
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions/checkout-ns3
+          sparse-checkout-cone-mode: false
+      - name: "Checkout this repository as ns-3 module"
+        uses: ./.github/actions/checkout-ns3
+      - name: "Test ns-3"
+        uses: ./src/lorawan/.github/actions/test
+        env:
+          BUILD_ID: ${{ format('per-commit-{0}-{1}', inputs.compiler, inputs.mode) }}
+          COMPILER: ${{ inputs.compiler }}
+          MODE: ${{ inputs.mode }}
+          EXTRA_OPTIONS: ${{ inputs.extra_options }}

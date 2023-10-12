@@ -1,0 +1,23 @@
+name: "Per-commit ns-3 CI jobs"
+run-name: "Per-commit"
+
+on: [push, pull_request]
+
+jobs:
+  # .pre stage
+  code-linting:
+    uses: ./.github/workflows/.code-linting.yml
+
+  # build and test
+  per-commit:
+    strategy:
+      matrix:
+        stage: [test]
+        compiler: [g++]
+        mode: [default]
+    uses: ./.github/workflows/.base-per-commit.yml
+    with:
+      compiler: ${{ matrix.compiler }}
+      mode: ${{ matrix.mode }}
+      stage: ${{ matrix.stage }}
+# documentation
