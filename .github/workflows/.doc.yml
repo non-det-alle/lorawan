@@ -1,0 +1,65 @@
+# Base ns-3 CI job template for per-commit jobs involving building and testing
+
+on: workflow_call
+
+jobs:
+  doxigen:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+    timeout-minutes: 120
+    env:
+      CCACHE_BASEDIR_VALUE: ns-3-ccache-storage
+      COMPILER: g++
+    steps:
+      - name: "Restore build cache of this job"
+        uses: actions/cache@v3
+        with:
+          path: $CCACHE_BASEDIR_VALUE
+          key: ccache-per-commit-g++-debug
+      - name: "Install required packages"
+        run: >
+          pacman-key --init &&
+          pacman -Syu --noconfirm
+          base-devel ninja cmake python ccache gsl gtk3 boost openmpi openssh
+          graphviz imagemagick texlive-basic texlive-bin texlive-binextra texlive-latexextra
+          texlive-fontutils texlive-fontsrecommended python-sphinx 
+          wget &&
+          pacman --noconfirm -U https://archive.archlinux.org/packages/d/dia/dia-0.97.3-9-x86_64.pkg.tar.zst &&
+          pacman --noconfirm -U https://archive.archlinux.org/packages/d/doxygen/doxygen-1.9.6-1-x86_64.pkg.tar.zst &&
+          mv /etc/ImageMagick-7/policy.xml /etc/ImageMagick-7/policy.xml.bak
+      # The following 2 steps are required...
+      # Github workflows/actions are too limited >:(
+      # They will be duplicated in all reusable workflows
+      - name: "Retrieve action from repository"
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions/checkout-ns3
+          sparse-checkout-cone-mode: false
+      - name: "Checkout this repository as ns-3 module"
+        uses: ./.github/actions/checkout-ns3
+      - name: "Prepare ccache environment"
+        run: |
+          mkdir -p $CCACHE_BASEDIR_VALUE
+          echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "CCACHE_DIR=$GITHUB_WORKSPACE/$CCACHE_BASEDIR_VALUE" >> $GITHUB_ENV
+          echo "MPI_CI=1" >> $GITHUB_ENV
+      - name: "Configure ns-3 CMake"
+        run: CXX=$COMPILER ./ns3 configure -d debug -GNinja --enable-examples --enable-tests --enable-asserts --enable-modules "lorawan;applications"
+      - name: "Build ns-3"
+        run: |
+          ./ns3 build
+          ./ns3 build assemble-introspected-command-line
+      - name: "Documentation"
+        run: |
+          doc/doxygen.warnings.report.sh
+          python3 utils/check-style-clang-format.py --no-formatting --no-tabs doc/introspected-doxygen.h
+          python3 utils/check-style-clang-format.py --no-formatting --no-tabs doc/introspected-command-line.h
+          ./ns3 clean
+          - name: "Upload build artifacts"
+      - uses: actions/upload-artifact@v3
+        with:
+          name: doxygen
+          path: doc/doxygen.warnings.log
+          retention-days: 2
