@@ -4,7 +4,7 @@ run-name: "Per-commit"
 on: [push, pull_request]
 
 jobs:
-  # .pre stage
+  # pre-build
   pre-build:
     uses: ./.github/workflows/.code-linting.yml
     with:
@@ -13,7 +13,6 @@ jobs:
   # build and test
   build:
     needs: pre-build
-    if: success()
     strategy:
       matrix:
         compiler: [g++]
