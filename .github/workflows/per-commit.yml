@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         compiler: [g++]
-        mode: [default]
+        mode: [default, optimized]
         do_test: [test]
         include:
           - compiler: g++
