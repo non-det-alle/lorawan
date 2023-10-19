@@ -11,16 +11,25 @@ jobs:
       stage: pre-build
 
   # build and test
-  build:
+  compile:
     needs: pre-build
     strategy:
       matrix:
         compiler: [g++]
         mode: [default, optimized]
+        extra_options: [" "]
         do_test: [test]
         include:
           - compiler: g++
             mode: debug
+          - compiler: clang++
+            mode: debug
+          - compiler: g++
+            mode: debug
+            extra_options: --disable-precompiled-headers
+          - compiler: g++
+            mode: debug
+            extra_options: --disable-asserts
     uses: ./.github/workflows/.base-per-commit.yml
     with:
       compiler: ${{ matrix.compiler }}
