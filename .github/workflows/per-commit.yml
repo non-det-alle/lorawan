@@ -10,7 +10,7 @@ jobs:
 
   # build and test
   per-commit:
-    needs: code-linting
+    #needs: code-linting
     strategy:
       matrix:
         compiler: [g++]
