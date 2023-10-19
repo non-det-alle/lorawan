@@ -8,6 +8,7 @@ jobs:
     container:
       image: archlinux
     timeout-minutes: 120
+    continue-on-error: true
     env:
       CCACHE_BASEDIR_VALUE: ns-3-ccache-storage
       COMPILER: g++

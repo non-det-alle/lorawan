@@ -17,12 +17,11 @@ jobs:
       matrix:
         compiler: [g++]
         mode: [default, optimized]
-        extra_options: [" "]
         do_test: [test]
         include:
-          - compiler: g++
-            mode: debug
           - compiler: clang++
+            mode: debug
+          - compiler: g++
             mode: debug
           - compiler: g++
             mode: debug
