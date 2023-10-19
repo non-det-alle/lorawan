@@ -53,12 +53,12 @@ jobs:
           ./ns3 build assemble-introspected-command-line
       - name: "Documentation"
         run: |
-          doc/doxygen.warnings.report.sh
+          doc/doxygen.warnings.report.sh -i -m lorawan
           python3 utils/check-style-clang-format.py --no-formatting --no-tabs doc/introspected-doxygen.h
           python3 utils/check-style-clang-format.py --no-formatting --no-tabs doc/introspected-command-line.h
           ./ns3 clean
-          - name: "Upload build artifacts"
-      - uses: actions/upload-artifact@v3
+      - name: "Upload build artifacts"
+        uses: actions/upload-artifact@v3
         with:
           name: doxygen
           path: doc/doxygen.warnings.log

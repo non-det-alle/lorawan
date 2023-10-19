@@ -4,11 +4,18 @@
 
 # TODO: clang-tidy step, too difficult at the moment
 
-on: workflow_call
+on:
+  workflow_call:
+    inputs:
+      stage:
+        description: "pre-build|code-linting"
+        required: true
+        type: string
 
 jobs:
   # Clang-format
   check-style-clang-format:
+    if: inputs.stage == "pre-build"
     runs-on: ubuntu-latest
     container:
       image: ubuntu:rolling
@@ -40,6 +47,7 @@ jobs:
 
   # Emacs line
   emacs-line:
+    if: inputs.stage == "pre-build"
     runs-on: ubuntu-latest
     timeout-minutes: 60
     continue-on-error: true
@@ -56,6 +64,7 @@ jobs:
 
   # Spell checking
   spell-check:
+    if: inputs.stage == "pre-build"
     runs-on: ubuntu-latest
     container:
       image: python:latest

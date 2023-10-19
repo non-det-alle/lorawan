@@ -15,8 +15,8 @@ on:
         description: "additional './ns3 configure' options"
         required: false
         type: string
-      test:
-        description: "whether to run test job after build"
+      do_test:
+        description: "set to 'test' to run tests job after build"
         required: false
         type: string
 
@@ -56,7 +56,7 @@ jobs:
           EXTRA_OPTIONS: ${{ inputs.extra_options }}
 
   test:
-    if: inputs.test == 'test'
+    if: inputs.do_test == 'test'
     runs-on: ubuntu-latest
     needs: build
     container:

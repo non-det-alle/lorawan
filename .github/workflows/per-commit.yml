@@ -5,17 +5,20 @@ on: [push, pull_request]
 
 jobs:
   # .pre stage
-  code-linting:
+  pre-build:
     uses: ./.github/workflows/.code-linting.yml
+    with:
+      stage: pre-build
 
   # build and test
-  per-commit:
-    #needs: code-linting
+  build:
+    needs: pre-build
+    if: success()
     strategy:
       matrix:
         compiler: [g++]
         mode: [default]
-        test: [test]
+        do_test: [test]
         include:
           - compiler: g++
             mode: debug
@@ -24,9 +27,9 @@ jobs:
       compiler: ${{ matrix.compiler }}
       mode: ${{ matrix.mode }}
       extra_options: ${{ matrix.extra_options }}
-      test: ${{ matrix.test }}
+      do_test: ${{ matrix.do_test }}
 
   # documentation
   documentation:
     uses: ./.github/workflows/.doc.yml
-    needs: per-commit
+    needs: build
