@@ -17,7 +17,7 @@ on:
         type: string
       test:
         description: "whether to run test job after build"
-        default: false
+        required: false
         type: string
 
 jobs:
@@ -56,7 +56,7 @@ jobs:
           EXTRA_OPTIONS: ${{ inputs.extra_options }}
 
   test:
-    if: inputs.test
+    if: inputs.test == 'test'
     runs-on: ubuntu-latest
     needs: build
     container:
