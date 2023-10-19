@@ -39,4 +39,4 @@ jobs:
   # documentation
   documentation:
     uses: ./.github/workflows/.doc.yml
-    needs: build
+    needs: compile
