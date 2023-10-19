@@ -15,6 +15,10 @@ jobs:
         stage: [test]
         compiler: [g++]
         mode: [default]
+        include:
+          - stage: build
+            compiler: g++
+            mode: debug
     uses: ./.github/workflows/.base-per-commit.yml
     with:
       compiler: ${{ matrix.compiler }}
