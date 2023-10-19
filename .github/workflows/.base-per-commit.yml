@@ -18,7 +18,7 @@ on:
       test:
         description: "whether to run test job after build"
         default: false
-        type: boolean
+        type: string
 
 jobs:
   build:
