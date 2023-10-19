@@ -13,11 +13,6 @@ jobs:
       CCACHE_BASEDIR_VALUE: ns-3-ccache-storage
       COMPILER: g++
     steps:
-      - name: "Restore build cache of this job"
-        uses: actions/cache@v3
-        with:
-          path: $CCACHE_BASEDIR_VALUE
-          key: ccache-per-commit-g++-debug
       - name: "Install required packages"
         run: >
           pacman-key --init &&
@@ -40,6 +35,11 @@ jobs:
           sparse-checkout-cone-mode: false
       - name: "Checkout this repository as ns-3 module"
         uses: ./.github/actions/checkout-ns3
+      - name: "Restore build cache of this job"
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.CCACHE_BASEDIR_VALUE }}
+          key: ccache-per-commit-g++-debug
       - name: "Prepare ccache environment"
         run: |
           mkdir -p $CCACHE_BASEDIR_VALUE

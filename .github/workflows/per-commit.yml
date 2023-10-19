@@ -1,5 +1,5 @@
 name: "Per-commit ns-3 CI jobs"
-run-name: "Per-commit"
+run-name: "per-commit"
 
 on: [push, pull_request]
 
