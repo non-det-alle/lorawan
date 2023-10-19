@@ -10,21 +10,23 @@ jobs:
 
   # build and test
   per-commit:
+    needs: code-linting
     strategy:
       matrix:
-        stage: [test]
         compiler: [g++]
         mode: [default]
+        test: [true]
         include:
-          - stage: build
-            compiler: g++
+          - compiler: g++
             mode: debug
     uses: ./.github/workflows/.base-per-commit.yml
     with:
       compiler: ${{ matrix.compiler }}
       mode: ${{ matrix.mode }}
-      stage: ${{ matrix.stage }}
+      extra_options: ${{ matrix.extra_options }}
+      test: ${{ matrix.test }}
 
   # documentation
   documentation:
     uses: ./.github/workflows/.doc.yml
+    needs: per-commit
