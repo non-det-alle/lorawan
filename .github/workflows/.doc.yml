@@ -59,6 +59,7 @@ jobs:
           python3 utils/check-style-clang-format.py --no-formatting --no-tabs doc/introspected-command-line.h
           ./ns3 clean
       - name: "Upload build artifacts"
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: doxygen
