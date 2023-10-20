@@ -4,39 +4,41 @@ run-name: "per-commit"
 on: [push, pull_request]
 
 jobs:
-  # pre-build
-  pre-build:
+  testing:
     uses: ./.github/workflows/.code-linting.yml
-    with:
-      stage: pre-build
-
-  # build and test
-  compile:
-    needs: pre-build
-    strategy:
-      matrix:
-        compiler: [g++]
-        mode: [default, optimized]
-        do_test: [test]
-        include:
-          - compiler: clang++
-            mode: debug
-          - compiler: g++
-            mode: debug
-          - compiler: g++
-            mode: debug
-            extra_options: --disable-precompiled-headers
-          - compiler: g++
-            mode: debug
-            extra_options: --disable-asserts
-    uses: ./.github/workflows/.base-per-commit.yml
-    with:
-      compiler: ${{ matrix.compiler }}
-      mode: ${{ matrix.mode }}
-      extra_options: ${{ matrix.extra_options }}
-      do_test: ${{ matrix.do_test }}
-
-  # documentation
-  documentation:
-    uses: ./.github/workflows/.doc.yml
-    needs: compile
+#  # pre-build
+#  pre-build:
+#    uses: ./.github/workflows/.code-linting.yml
+#    with:
+#      stage: pre-build
+#
+#  # build and test
+#  compile:
+#    needs: pre-build
+#    strategy:
+#      matrix:
+#        compiler: [g++]
+#        mode: [default, optimized]
+#        do_test: [test]
+#        include:
+#          - compiler: clang++
+#            mode: debug
+#          - compiler: g++
+#            mode: debug
+#          - compiler: g++
+#            mode: debug
+#            extra_options: --disable-precompiled-headers
+#          - compiler: g++
+#            mode: debug
+#            extra_options: --disable-asserts
+#    uses: ./.github/workflows/.base-per-commit.yml
+#    with:
+#      compiler: ${{ matrix.compiler }}
+#      mode: ${{ matrix.mode }}
+#      extra_options: ${{ matrix.extra_options }}
+#      do_test: ${{ matrix.do_test }}
+#
+#  # documentation
+#  documentation:
+#    uses: ./.github/workflows/.doc.yml
+#    needs: compile

@@ -13,7 +13,7 @@ jobs:
       CCACHE_BASEDIR_VALUE: ns-3-ccache-storage
       COMPILER: g++
     steps:
-      - name: "Install required packages"
+      - name: "Install required system packages"
         run: >
           pacman-key --init &&
           pacman -Syu --noconfirm
@@ -58,10 +58,9 @@ jobs:
           python3 utils/check-style-clang-format.py --no-formatting --no-tabs doc/introspected-doxygen.h
           python3 utils/check-style-clang-format.py --no-formatting --no-tabs doc/introspected-command-line.h
           ./ns3 clean
-      - name: "Upload build artifacts"
+      - name: "Upload doxygen warnings as artifact"
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: doxygen
+          name: doxygen.warnings.log
           path: doc/doxygen.warnings.log
-          retention-days: 2
