@@ -9,9 +9,8 @@ jobs:
     container:
       image: ubuntu:rolling
     steps:
-      - run: mkdir -p src/lorawan
-      - run: echo $GITHUB_WORKSPACE
-        working-directory: ./src/lorawan
+      - run: echo $GITHUB_REF_NAME
+      - run: echo $GITHUB_HEAD_REF
 #  # pre-build
 #  pre-build:
 #    uses: ./.github/workflows/.code-linting.yml
