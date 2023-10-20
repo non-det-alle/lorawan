@@ -4,8 +4,14 @@ run-name: "per-commit"
 on: [push, pull_request]
 
 jobs:
-  testing:
-    uses: ./.github/workflows/.code-linting.yml
+  test-workspace:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:rolling
+    steps:
+      - run: mkdir -p src/lorawan
+      - run: echo $GITHUB_WORKSPACE
+        working-directory: ./src/lorawan
 #  # pre-build
 #  pre-build:
 #    uses: ./.github/workflows/.code-linting.yml

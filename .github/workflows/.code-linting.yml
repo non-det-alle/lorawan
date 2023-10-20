@@ -45,15 +45,6 @@ jobs:
       - name: "Check code style"
         run: python3 utils/check-style-clang-format.py --verbose .
 
-  test-workspace:
-    runs-on: ubuntu-latest
-    container:
-      image: ubuntu:rolling
-    steps:
-      - run: mkdir -p src/lorawan
-      - run: echo $GITHUB_WORKSPACE
-        working-directory: ./src/lorawan
-
   # Clang-tidy
   clang-tidy-16:
     if: ! always()
