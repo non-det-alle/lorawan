@@ -109,11 +109,9 @@ AdrComponent::BeforeSendingReply(Ptr<EndDeviceStatus> status, Ptr<NetworkStatus>
     if (fHdr.GetAdr())
     {
         if (int(status->GetReceivedPacketList().size()) < historyRange)
-        {
             NS_LOG_ERROR("Not enough packets received by this device ("
                          << status->GetReceivedPacketList().size()
                          << ") for the algorithm to work (need " << historyRange << ")");
-        }
         else
         {
             NS_LOG_DEBUG("New ADR request");
